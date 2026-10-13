@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PC Hardware Clearance & Power Index | By PC Part Arena</title>
+  <meta name="description" content="Interactive GPU clearance calculator, AIO radiator stack-up checker, and ATX 3.0 PSU headroom estimator. Built by PC Part Arena for custom PC builders.">
+  <link rel="canonical" href="https://pcpartarena.pages.dev/" />
+
+  <!-- Open Graph / Meta -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="PC Hardware Clearance & Power Index | PC Part Arena">
+  <meta property="og:description" content="Check GPU clearances, radiator stack-ups, and ATX 3.0 power spike margins before buying hardware.">
+  <link rel="canonical" href="https://pcpartarena.pages.dev/" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              DEFAULT: '#4662f5',
+              hover: '#344ec7',
+              light: '#6a80f8',
+              surface: 'rgba(70, 98, 245, 0.08)',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Font: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .font-mono-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Subtle theme transition */
+    body, header, nav, section, div, input, select {
+      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease;
+    }
+    /* Glassmorphic card styling */
+    .glass-card {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .glow-border {
+      position: relative;
+    }
+    .glow-border::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(70, 98, 245, 0.4), rgba(70, 98, 245, 0.05));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-[#0b0f19] dark:text-slate-100 min-h-screen flex flex-col antialiased selection:bg-brand selection:text-white">
+
+  <header class="sticky top-0 z-50 bg-white/80 dark:bg-[#0b0f19]/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <!-- Brand Logo / Identity -->
+      <a href="https://pcpartarena.com" class="flex items-center gap-2.5 group">
+        <div class="w-9 h-9 rounded-xl bg-brand text-white flex items-center justify-center font-extrabold text-lg shadow-md shadow-brand/25 group-hover:scale-105 transition-transform">
+          PA
+        </div>
+        <div>
+          <span class="font-bold text-base sm:text-lg tracking-tight text-slate-900 dark:text-white block leading-tight">
+            Clearance & Power Index
+          </span>
+          <span class="text-xs text-brand font-medium tracking-wide uppercase">
+            by PC Part Arena
+          </span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Links -->
+      <nav class="hidden md:flex items-center gap-7 text-sm font-medium text-slate-600 dark:text-slate-300">
+        <a href="#calculators" class="hover:text-brand dark:hover:text-brand transition-colors">Calculators</a>
+        <a href="#deep-dives" class="hover:text-brand dark:hover:text-brand transition-colors">Clearance Guide</a>
+        <a href="#power-limits" class="hover:text-brand dark:hover:text-brand transition-colors">Power Limits</a>
+      </nav>
+
+      <!-- Action items: Dark mode toggle & Primary CTA -->
+      <div class="flex items-center gap-3">
+        <!-- Theme Switcher Button -->
+        <button id="theme-toggle" aria-label="Toggle color theme" class="p-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-brand transition-colors">
+          <!-- Moon Icon (displayed in Light Mode) -->
+          <svg id="theme-icon-moon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+          </svg>
+          <!-- Sun Icon (displayed in Dark Mode) -->
+          <svg id="theme-icon-sun" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+        </button>
+
+        <!-- External CTA Button to PCPartArena -->
+        <a href="https://pcpartarena.com" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold bg-brand text-white hover:bg-brand-hover shadow-sm shadow-brand/30 transition-all hover:shadow-brand/50">
+          <span>Launch Builder</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow">
+    <section class="relative pt-16 pb-20 md:pt-24 md:pb-28 overflow-hidden">
+      <!-- Background subtle radial glow -->
+      <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-brand/10 dark:bg-brand/15 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-brand/10 text-brand dark:bg-brand/20 dark:text-brand-light border border-brand/20 mb-6">
+          <span class="w-2 h-2 rounded-full bg-brand animate-pulse"></span>
+          Interactive Hardware Tolerance Engine
+        </div>
+
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
+          Master Custom PC Tolerances & Component Compatibility
+        </h1>
+
+        <p class="mt-6 text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
+          A dedicated technical sanity-checker for GPU dimensions, front AIO radiator thickness stack-ups, ATX 3.0 power excursions, and PCIe lane bifurcation.
+        </p>
+
+        <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a href="https://pcpartarena.com" target="_blank" rel="noopener" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-white bg-brand hover:bg-brand-hover shadow-lg shadow-brand/25 transition-all text-base">
+            <span>Launch Full Builder on PC Part Arena</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+            </svg>
+          </a>
+          <a href="#calculators" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 rounded-xl font-semibold text-slate-700 dark:text-slate-200 bg-slate-200/70 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-800 border border-slate-300/60 dark:border-slate-700 transition-colors text-base">
+            Jump to Clearance Calculator
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="calculators" class="py-16 bg-slate-100/60 dark:bg-[#0e1424] border-y border-slate-200/80 dark:border-slate-800/80">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-14">
+          <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white">Interactive Hardware Calculators</h2>
+          <p class="mt-2 text-slate-600 dark:text-slate-400">Validate real-world mechanical and electrical tolerances before purchasing parts.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          
+          <!-- TOOL 1: GPU & Radiator Clearance Checker -->
+          <div class="bg-white dark:bg-slate-900/90 rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-800 glow-border">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center font-bold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white">GPU + Radiator Clearance</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Calculates front radiator stack-up clearance</p>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label for="case-max-gpu" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">Case Max GPU Spec (mm)</label>
+                  <input type="number" id="case-max-gpu" value="360" min="150" max="600" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand focus:outline-none">
+                </div>
+                <div>
+                  <label for="gpu-length" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">Chosen GPU Length (mm)</label>
+                  <input type="number" id="gpu-length" value="304" min="120" max="450" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand focus:outline-none">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label for="rad-thickness" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">Radiator Core Depth (mm)</label>
+                  <input type="number" id="rad-thickness" value="27" min="0" max="100" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand focus:outline-none">
+                </div>
+                <div>
+                  <label for="fan-thickness" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">Intake Fan Depth (mm)</label>
+                  <input type="number" id="fan-thickness" value="25" min="0" max="50" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand focus:outline-none">
+                </div>
+              </div>
+
+              <!-- Output Status Card -->
+              <div id="clearance-result-card" class="mt-6 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Clearance Status</span>
+                  <span id="clearance-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Optimal</span>
+                </div>
+                
+                <div class="text-2xl font-bold font-mono-code text-slate-900 dark:text-white" id="clearance-remainder">
+                  +4.0 mm clearance
+                </div>
+                <p id="clearance-desc" class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Available space after deducting 52mm front assembly from 360mm chassis depth.
+                </p>
+
+                <!-- Visual Bar meter -->
+                <div class="w-full bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden mt-4">
+                  <div id="clearance-progress" class="bg-emerald-500 h-full rounded-full transition-all duration-300" style="width: 85%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOOL 2: ATX 3.0 / PSU Headroom Estimator -->
+          <div id="power-limits" class="bg-white dark:bg-slate-900/90 rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-800 glow-border">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center font-bold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white">ATX 3.0 & Transient Spike Estimator</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Calculates burst power headroom requirements</p>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label for="cpu-tier" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">CPU Power Profile</label>
+                <select id="cpu-tier" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand focus:outline-none">
+                  <option value="65">65W TDP (e.g. Ryzen 7600, Core i5 non-K)</option>
+                  <option value="125" selected>125W - 170W Performance (e.g. Ryzen 7800X3D, Core i7 14700)</option>
+                  <option value="250">250W+ Extreme Enthusiast (e.g. Core i9 14900KS / Heavy OC)</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="gpu-tier" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">GPU Class & Excursion Tier</label>
+                <select id="gpu-tier" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand focus:outline-none">
+                  <option value="130">Entry / Budget Tier (~130W, e.g. RTX 4060, RX 7600)</option>
+                  <option value="220" selected>Mid-Range Tier (~220W, e.g. RTX 4070 Super, RX 7800 XT)</option>
+                  <option value="320">High-End Tier (~320W, e.g. RTX 4080 Super, RX 7900 XTX)</option>
+                  <option value="450">Flagship Ultra (~450W+, e.g. RTX 4090)</option>
+                </select>
+              </div>
+
+              <!-- Output Box for Power -->
+              <div class="mt-6 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Recommended PSU Rating</span>
+                  <span id="psu-tier-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand/10 text-brand border border-brand/20">ATX 3.0 Standard</span>
+                </div>
+                <div class="text-2xl font-bold font-mono-code text-slate-900 dark:text-white" id="psu-recommended-wattage">
+                  750W - 850W
+                </div>
+                <div class="text-xs text-slate-600 dark:text-slate-400 mt-2 space-y-1">
+                  <p id="connector-recommendation"><strong>Cable Spec:</strong> Native 16-pin 12V-2x6 / 12VHPWR (450W rated or dual 8-pin).</p>
+                  <p><strong>Estimated Sustained Load:</strong> <span id="sustained-load" class="font-mono-code text-slate-900 dark:text-slate-200">~425W</span> (Includes ~80W peripherals & storage)</p>
+                </div>
+                <div class="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700/60 text-right">
+                  <a href="https://pcpartarena.com" target="_blank" rel="noopener" class="text-xs font-bold text-brand hover:underline inline-flex items-center gap-1">
+                    Check PSU retail prices on PC Part Arena &rarr;
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section id="deep-dives" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-14">
+        <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white">Three Costly Architectural Traps</h2>
+        <p class="mt-2 text-slate-600 dark:text-slate-400">Critical clearance and bandwidth boundaries to review prior to unboxing.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <!-- Deep Dive 1 -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold mb-4">
+              01
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">PCIe Lane Bifurcation & Secondary M.2</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+              On several current chipsets, populating secondary CPU-attached M.2 slots with PCIe 5.0 drives switches the primary discrete graphics PCIe slot from <strong>x16 down to x8</strong>.
+            </p>
+          </div>
+          <div class="pt-4 border-t border-slate-100 dark:border-slate-800 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            Check motherboard block diagram before buying multiple Gen 5 SSDs.
+          </div>
+        </div>
+
+        <!-- Deep Dive 2 -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center font-bold mb-4">
+              02
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">The 30mm 12VHPWR Straight Rule</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+              To guarantee consistent terminal pin contact and prevent overheating, modern 12V-2x6 connectors require at least <strong>30mm of straight cable run</strong> before any sharp bend against case glass.
+            </p>
+          </div>
+          <div class="pt-4 border-t border-slate-100 dark:border-slate-800 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            Ensure case width provides at least 175mm CPU cooler clearance.
+          </div>
+        </div>
+
+        <!-- Deep Dive 3 -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center font-bold mb-4">
+              03
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">RAM Height vs. Dual-Tower Coolers</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+              Flagship dual-tower air coolers overhang standard memory slots. Memory modules exceeding 35mm in height force the front 120mm/140mm fan to be mounted higher, causing side panel collisions.
+            </p>
+          </div>
+          <div class="pt-4 border-t border-slate-100 dark:border-slate-800 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            Choose low-profile memory or verify side-panel headroom.
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <div class="rounded-3xl p-8 sm:p-12 bg-gradient-to-br from-brand/15 via-slate-900 to-slate-950 border border-brand/30 relative overflow-hidden text-center sm:text-left flex flex-col lg:flex-row items-center justify-between gap-8 shadow-xl">
+        <!-- Background accents -->
+        <div class="absolute -right-20 -top-20 w-80 h-80 bg-brand/20 blur-3xl rounded-full pointer-events-none"></div>
+
+        <div class="max-w-2xl">
+          <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-brand text-white mb-3">
+            Prevent Post-Failure Rework
+          </span>
+          <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight">
+            Avoid Dead-on-Arrival Builds with PC Part Arena
+          </h2>
+          <p class="mt-3 text-slate-300 text-sm sm:text-base leading-relaxed">
+            Eliminate guesswork. <a href="https://pcpartarena.com" class="text-brand-light font-semibold hover:underline">PC Part Arena</a> combines dynamic component pricing across premier retailers with automated physical and electrical clearance checks.
+          </p>
+        </div>
+
+        <div class="flex-shrink-0">
+          <a href="https://pcpartarena.com" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-7 py-4 rounded-xl font-bold text-white bg-brand hover:bg-brand-hover shadow-lg shadow-brand/40 transition-all text-base hover:scale-105 transform">
+            <span>Open PC Part Arena Builder</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-white dark:bg-[#070b12] border-t border-slate-200 dark:border-slate-800/80 py-12 mt-16 text-sm text-slate-600 dark:text-slate-400">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div>
+          <a href="https://pcpartarena.com" class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-brand text-white flex items-center justify-center font-extrabold text-xs">PA</span>
+            PC Part Arena
+          </a>
+          <p class="text-xs text-slate-500 mt-1">Open reference tools for custom workstation and gaming computer assembly.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-6 text-xs">
+          <a href="https://pcpartarena.com" class="hover:text-brand transition-colors font-medium">Part Compatibility Engine</a>
+          <a href="https://pcpartarena.com" class="hover:text-brand transition-colors font-medium">Price Comparison</a>
+          <a href="https://pcpartarena.com" class="hover:text-brand transition-colors font-medium">System Builder</a>
+        </div>
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+        <p>&copy; 2026 PC Part Arena (pcpartarena.com). All rights reserved.</p>
+        <p>Technical reference for physical tolerances and electrical specifications.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // --- 1. Dark/Light Theme Switcher with LocalStorage & OS Sync ---
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const moonIcon = document.getElementById('theme-icon-moon');
+    const sunIcon = document.getElementById('theme-icon-sun');
+
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+        moonIcon.classList.add('hidden');
+        sunIcon.classList.remove('hidden');
+      } else {
+        document.documentElement.classList.remove('dark');
+        sunIcon.classList.add('hidden');
+        moonIcon.classList.remove('hidden');
+      }
+    }
+
+    // Determine initial theme: localStorage preference or OS setting
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialTheme = savedTheme ? savedTheme : (systemPrefersDark ? 'dark' : 'light');
+    applyTheme(initialTheme);
+
+    // Toggle button listener
+    themeToggleBtn.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      const newTheme = isDark ? 'light' : 'dark';
+      localStorage.setItem('theme', newTheme);
+      applyTheme(newTheme);
+    });
+
+    // Sync with system preferences dynamically if user hasn't overridden
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      if (!localStorage.getItem('theme')) {
+        applyTheme(e.matches ? 'dark' : 'light');
+      }
+    });
+
+    // --- 2. GPU + Radiator Clearance Logic ---
+    const inputCaseMax = document.getElementById('case-max-gpu');
+    const inputGpuLen = document.getElementById('gpu-length');
+    const inputRadThick = document.getElementById('rad-thickness');
+    const inputFanThick = document.getElementById('fan-thickness');
+
+    const clearanceBadge = document.getElementById('clearance-badge');
+    const clearanceRemainder = document.getElementById('clearance-remainder');
+    const clearanceDesc = document.getElementById('clearance-desc');
+    const clearanceProgress = document.getElementById('clearance-progress');
+
+    function updateClearanceCalculator() {
+      const caseMax = parseFloat(inputCaseMax.value) || 0;
+      const gpuLen = parseFloat(inputGpuLen.value) || 0;
+      const radThick = parseFloat(inputRadThick.value) || 0;
+      const fanThick = parseFloat(inputFanThick.value) || 0;
+
+      const totalAssemblyDepth = radThick + fanThick;
+      const availableSpace = caseMax - totalAssemblyDepth;
+      const remainder = availableSpace - gpuLen;
+
+      if (remainder < 0) {
+        // Collision
+        clearanceBadge.textContent = 'Collision Conflict';
+        clearanceBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20';
+        clearanceRemainder.textContent = `${remainder.toFixed(1)} mm Deficit`;
+        clearanceRemainder.className = 'text-2xl font-bold font-mono-code text-rose-600 dark:text-rose-400';
+        clearanceDesc.textContent = `GPU will collide with the front radiator/fan stack by ${Math.abs(remainder).toFixed(1)}mm.`;
+        clearanceProgress.className = 'bg-rose-500 h-full rounded-full transition-all duration-300';
+        clearanceProgress.style.width = '100%';
+      } else if (remainder <= 12) {
+        // Tight Fit
+        clearanceBadge.textContent = 'Tight Clearance';
+        clearanceBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20';
+        clearanceRemainder.textContent = `+${remainder.toFixed(1)} mm Clearance`;
+        clearanceRemainder.className = 'text-2xl font-bold font-mono-code text-amber-600 dark:text-amber-400';
+        clearanceDesc.textContent = 'Fits, but cables and front airflow channels will be constricted. Careful routing required.';
+        clearanceProgress.className = 'bg-amber-500 h-full rounded-full transition-all duration-300';
+        clearanceProgress.style.width = '94%';
+      } else {
+        // Optimal
+        clearanceBadge.textContent = 'Optimal Clearance';
+        clearanceBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20';
+        clearanceRemainder.textContent = `+${remainder.toFixed(1)} mm Clearance`;
+        clearanceRemainder.className = 'text-2xl font-bold font-mono-code text-slate-900 dark:text-white';
+        clearanceDesc.textContent = `Ample headroom for unchoked intake airflow and cable drop room.`;
+        clearanceProgress.className = 'bg-emerald-500 h-full rounded-full transition-all duration-300';
+        clearanceProgress.style.width = `${Math.min(100, Math.max(15, (gpuLen / availableSpace) * 100))}%`;
+      }
+    }
+
+    [inputCaseMax, inputGpuLen, inputRadThick, inputFanThick].forEach(input => {
+      input.addEventListener('input', updateClearanceCalculator);
+    });
+    updateClearanceCalculator();
+
+    // --- 3. ATX 3.0 Power & Transient Spike Logic ---
+    const cpuTierSelect = document.getElementById('cpu-tier');
+    const gpuTierSelect = document.getElementById('gpu-tier');
+    const psuRecommendedWattage = document.getElementById('psu-recommended-wattage');
+    const psuTierBadge = document.getElementById('psu-tier-badge');
+    const connectorRecommendation = document.getElementById('connector-recommendation');
+    const sustainedLoad = document.getElementById('sustained-load');
+
+    function updatePowerEstimator() {
+      const cpuWatts = parseFloat(cpuTierSelect.value);
+      const gpuWatts = parseFloat(gpuTierSelect.value);
+      const peripheralsWatts = 85; // Motherboard, RAM, NVMe drives, Fans, AIO pump
+
+      const baseLoad = cpuWatts + gpuWatts + peripheralsWatts;
+      sustainedLoad.textContent = `~${baseLoad}W`;
+
+      // 25% safety margin + transient surge absorption buffer
+      const safeBuffer = baseLoad * 1.30;
+
+      if (gpuWatts >= 400 || safeBuffer > 850) {
+        psuRecommendedWattage.textContent = '1000W - 1200W';
+        psuTierBadge.textContent = 'ATX 3.0 / PCIe 5.1 Required';
+        psuTierBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20';
+        connectorRecommendation.innerHTML = '<strong>Cable Spec:</strong> Native 12V-2x6 / 12VHPWR (600W marked cable rating).';
+      } else if (gpuWatts >= 280 || safeBuffer > 680) {
+        psuRecommendedWattage.textContent = '850W Gold / Platinum';
+        psuTierBadge.textContent = 'ATX 3.0 Recommended';
+        psuTierBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand/10 text-brand border border-brand/20';
+        connectorRecommendation.innerHTML = '<strong>Cable Spec:</strong> Native 16-pin 12V-2x6 or 3x dedicated 8-pin PCIe feeds.';
+      } else if (safeBuffer > 520) {
+        psuRecommendedWattage.textContent = '750W Standard';
+        psuTierBadge.textContent = 'ATX 2.52 or ATX 3.0';
+        psuTierBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20';
+        connectorRecommendation.innerHTML = '<strong>Cable Spec:</strong> Dual independent 8-pin PCIe connectors.';
+      } else {
+        psuRecommendedWattage.textContent = '550W - 650W Bronze/Gold';
+        psuTierBadge.textContent = 'Standard ATX';
+        psuTierBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20';
+        connectorRecommendation.innerHTML = '<strong>Cable Spec:</strong> Single or dual 8-pin PCIe power cable.';
+      }
+    }
+
+    cpuTierSelect.addEventListener('change', updatePowerEstimator);
+    gpuTierSelect.addEventListener('change', updatePowerEstimator);
+    updatePowerEstimator();
+  </script>
+</body>
+</html>
